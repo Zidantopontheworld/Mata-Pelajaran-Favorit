@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Favorite Subject - Class Yearbook</title>
+  <meta name="description" content="Tell the class your favorite school subject and see everyone else's profile card." data-i18n-attr="content:home.desc">
+  <meta name="theme-color" content="#38B6FF">
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI0IiBmaWxsPSIjMUE5QTVGIi8+CiAgPHBhdGggZD0iTTUwIDEyIEM1NCAzNiA2NCA0NiA4OCA1MCBDNjQgNTQgNTQgNjQgNTAgODggQzQ2IDY0IDM2IDU0IDEyIDUwIEMzNiA0NiA0NiAzNiA1MCAxMiBaIiBmaWxsPSIjRkZENDNCIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    index.html = seluruh tampilan website (HTML + CSS jadi satu).
+    app.js     = seluruh logika. Link Google Apps Script (Web app) ditempel di bagian paling atas app.js.
+    Simpan index.html dan app.js di FOLDER YANG SAMA, lalu buka index.html di browser.
+  -->
+  <style>
+/*
+  styles.css - the look of the "Favorite Subject" site.
+
+  Style idea: "yearbook meets modern web poster" - bright color blocks,
+  chunky rounded display type, sticker badges and layered depth.
+
+  Contents:
+    1. Design tokens (colors, fonts)       7. Homepage sections
+    2. Base + accessibility helpers        8. Input page (form)
+    3. Buttons and stickers                9. Gallery page (cards, chips, modal)
+    4. Navigation + storage badge         10. Footer
+    5. Hero and page headers              11. Animations
+    6. Decorations                        12. Reduced motion + small screens
+*/
+
+/* ==========================================================================
+   1. Design tokens
+   ========================================================================== */
+
+:root {
+  --green: #1A9A5F;
+  --green-dark: #137A4B;
+  --green-deep: #0B4D31;
+  --cream: #FFF4D6;
+  --paper: #FFFBEF;
+  --ink: #14261C;
+  --pink: #FF5C7A;
+  --yellow: #FFD43B;
+  --blue: #38B6FF;
+  --sky: #8EDBFF;
+  --purple: #B58CFF;
+
+  --font-display: 'Bungee', 'Impact', system-ui, sans-serif;
+  --font-head: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --shadow-soft: 0 10px 28px rgba(5, 50, 30, 0.28);
+  --shadow-soft-lift: 0 18px 38px rgba(5, 50, 30, 0.38);
+  --radius: 24px;
+  --page-width: 1120px;
+}
+
+/* ==========================================================================
+   2. Base + accessibility helpers
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--green);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.container {
+  width: min(var(--page-width), 100% - 2rem);
+  margin-inline: auto;
+}
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 4px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Text for screen readers only */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem; top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  font-family: var(--font-head);
+  font-weight: 600;
+}
+.skip-link:focus { top: 1rem; }
+
+[hidden] { display: none !important; }
+
+/* ==========================================================================
+   3. Buttons and stickers
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 5px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover { transform: translateY(-3px); box-shadow: 0 8px 0 var(--ink); }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.btn:disabled { opacity: 0.7; cursor: wait; transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.btn--yellow { background: var(--yellow); }
+.btn--pink { background: var(--pink); }
+.btn--blue { background: var(--blue); }
+.btn--big { padding: 1rem 1.9rem; font-size: 1.25rem; }
+
+/* Sticker: a badge that looks stuck on, with a small tilt */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.2rem 0.8rem;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.sticker--yellow { background: var(--yellow); transform: rotate(-3deg); }
+.sticker--pink { background: var(--pink); transform: rotate(-2deg); }
+.sticker--class { background: var(--cream); transform: rotate(-3deg); }
+.sticker--subject { background: var(--tag-bg, var(--yellow)); transform: rotate(2deg); }
+
+/* ==========================================================================
+   4. Navigation + storage badge
+   ========================================================================== */
+
+.site-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: min(var(--page-width), 100% - 1.5rem);
+  margin: 0.9rem auto 0;
+  padding: 0.5rem 0.7rem 0.5rem 1.1rem;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 5px 0 var(--ink);
+}
+
+.site-nav__brand {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.site-nav__brand [aria-hidden] { color: var(--pink); }
+
+.site-nav__links {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-nav__links a {
+  display: block;
+  padding: 0.3rem 0.95rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+.site-nav__links a:hover { background: var(--sky); }
+.site-nav__links a[aria-current='page'] { background: var(--yellow); box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* Badge + language switch, grouped on the right of the bar */
+.site-nav__tools { display: flex; align-items: center; gap: 0.5rem; }
+
+/* Language setting: a small two-button switch, ID | EN */
+.lang-switch {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+.lang-switch__btn {
+  padding: 0.15rem 0.7rem;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.lang-switch__btn:hover { background: var(--sky); }
+.lang-switch__btn[aria-pressed='true'] { background: var(--yellow); box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* Tells the student where profiles are saved */
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+.mode-badge__dot {
+  width: 0.7rem; height: 0.7rem;
+  background: #9aa5a0;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+.mode-badge[data-mode='local'] .mode-badge__dot { background: var(--yellow); }
+.mode-badge[data-mode='sheets'] .mode-badge__dot { background: #24d26d; }
+.mode-badge[data-mode='error'] .mode-badge__dot { background: var(--pink); }
+
+/* ==========================================================================
+   5. Hero (homepage) and page headers (other pages)
+   ========================================================================== */
+
+.hero,
+.page-head {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2FA9F5 0%, #6CCBFF 55%, #A8E4FF 100%);
+}
+
+.hero { padding-bottom: 12rem; }
+.page-head { padding-bottom: 6rem; }
+
+.hero__content,
+.page-head__content {
+  position: relative;
+  z-index: 5;
+  width: min(880px, 100% - 2rem);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero__content { padding-top: clamp(2.5rem, 6vw, 4.5rem); }
+.page-head__content { padding-top: clamp(1.8rem, 4vw, 3rem); }
+
+.hero__kicker { font-size: 1.05rem; margin-bottom: 1.2rem; }
+
+/* The big chunky poster title, with a layered "3D" shadow */
+.hero__title {
+  margin: 0 0 1.2rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow:
+    0 3px 0 var(--green-deep),
+    0 6px 0 var(--green-deep),
+    0 9px 0 var(--green-deep),
+    0 14px 18px rgba(11, 77, 49, 0.45);
+  -webkit-text-stroke: 2px var(--green-deep);
+  paint-order: stroke fill;
+}
+.hero__title span { display: block; }
+.hero__title-small { font-size: clamp(2rem, 6.5vw, 4.2rem); }
+.hero__title-big {
+  font-size: clamp(3.4rem, 15vw, 9rem);
+  color: var(--yellow);
+  transform: rotate(-2deg);
+  margin: 0.05em 0;
+}
+
+.hero__lead {
+  max-width: 34rem;
+  margin: 0 auto 1.8rem;
+  font-size: clamp(1.1rem, 2.4vw, 1.3rem);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.hero__hills {
+  position: absolute;
+  left: 0; bottom: -1px;
+  width: 100%;
+  height: clamp(110px, 18vw, 220px);
+  z-index: 3;
+}
+
+/* Smaller header used on the input and gallery pages */
+.page-head__title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 8vw, 4.8rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 0 3px 0 var(--green-deep), 0 6px 0 var(--green-deep), 0 10px 14px rgba(11, 77, 49, 0.4);
+  -webkit-text-stroke: 2px var(--green-deep);
+  paint-order: stroke fill;
+}
+.page-head__title span:not(.page-head__plain) { color: var(--yellow); }
+.page-head__lead {
+  max-width: 32rem;
+  margin: 0 auto;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* Wavy divider at the bottom of a page header */
+.wave {
+  position: absolute;
+  left: 0; bottom: -1px;
+  width: 100%;
+  height: 70px;
+  fill: var(--green);
+  z-index: 3;
+}
+
+/* ==========================================================================
+   6. Decorations (illustrated shapes floating around)
+   ========================================================================== */
+
+.hero__decor,
+.page-head__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.deco {
+  position: absolute;
+  width: var(--size, 90px);
+  height: auto;
+  animation: float 6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  filter: drop-shadow(0 6px 0 rgba(11, 77, 49, 0.25));
+}
+
+.deco--sparkle { --size: 48px; filter: none; animation-name: twinkle; animation-duration: 3.6s; }
+.deco--s1 { top: 18%; left: 8%; --size: 56px; }
+.deco--s2 { top: 30%; right: 9%; --size: 40px; --delay: 1.2s; }
+.deco--s3 { top: 15%; left: 24%; --size: 34px; --delay: 2s; }
+
+.deco--book       { --size: clamp(80px, 11vw, 150px); --r: -12deg; left: 5%;  top: 42%; }
+.deco--pencil     { --size: clamp(80px, 11vw, 150px); --r: 10deg;  right: 6%; top: 24%; --delay: 0.8s; }
+.deco--calculator { --size: clamp(70px, 9vw, 120px);  --r: 8deg;   left: 13%; top: 68%; --delay: 1.6s; }
+.deco--globe      { --size: clamp(80px, 10vw, 130px); --r: -8deg;  right: 12%; top: 58%; --delay: 0.4s; }
+.deco--squiggle   { --size: 130px; right: 26%; top: 10%; --delay: 0.3s; filter: none; opacity: 0.9; }
+
+/* Decorations on the smaller page headers */
+.deco--head-left  { left: 6%;  right: auto; top: 34%; --size: clamp(70px, 9vw, 120px); --r: -10deg; }
+.deco--head-right { right: 6%; left: auto;  top: 30%; --size: clamp(70px, 9vw, 120px); --r: 10deg; --delay: 1s; }
+
+/* Soft clouds made from stretched circles */
+.cloud {
+  position: absolute;
+  width: 190px; height: 56px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  animation: drift 40s linear infinite;
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+.cloud::before { width: 80px; height: 80px; left: 30px; top: -38px; }
+.cloud::after { width: 60px; height: 60px; left: 95px; top: -26px; }
+.cloud--1 { top: 22%; left: -220px; }
+.cloud--2 { top: 48%; left: -220px; animation-delay: -20s; transform: scale(0.7); opacity: 0.8; }
+
+/* ==========================================================================
+   7. Homepage sections
+   ========================================================================== */
+
+.section { padding: 3.5rem 0; }
+.section--green { background: var(--green); }
+
+.section__title {
+  margin: 0 0 1.8rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 5.5vw, 3.2rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 0 3px 0 var(--green-deep), 0 6px 0 var(--green-deep);
+  -webkit-text-stroke: 2px var(--green-deep);
+  paint-order: stroke fill;
+}
+
+/* Live stats */
+.stats { padding-top: 1.5rem; }
+.stats__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.5rem;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1.5rem 1rem 1.4rem;
+  text-align: center;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 var(--ink);
+  transition: transform 0.2s ease;
+}
+.stat-card:nth-child(1) { transform: rotate(-1.5deg); }
+.stat-card:nth-child(2) { transform: rotate(1deg); }
+.stat-card:nth-child(3) { transform: rotate(-1deg); }
+.stat-card:hover { transform: translateY(-5px) rotate(0deg); }
+.stat-card--pink { background: var(--pink); }
+.stat-card--yellow { background: var(--yellow); }
+.stat-card--blue { background: var(--blue); }
+.stat-card__label { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; }
+.stat-card__value { font-family: var(--font-display); font-size: clamp(2.6rem, 7vw, 3.6rem); line-height: 1.1; }
+.stat-card__value--subject { font-size: clamp(1.7rem, 4.5vw, 2.3rem); padding-block: 0.6rem 0.3rem; }
+.stat-card__sub { min-height: 1.4em; font-weight: 700; font-size: 0.95rem; }
+.stats__error {
+  margin: 1.2rem 0 0;
+  text-align: center;
+  font-weight: 800;
+  color: var(--cream);
+}
+
+/* How it works */
+.how { padding-top: 1.5rem; }
+.how__steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  position: relative;
+  padding: 2.4rem 1.4rem 1.5rem;
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--cream);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease;
+}
+.step:hover { transform: translateY(-6px) rotate(-1deg); }
+.step p { margin: 0; font-weight: 600; }
+.step__title { margin: 0 0 0.4rem; font-family: var(--font-head); font-size: 1.4rem; }
+.step__num {
+  position: absolute;
+  top: -1.4rem; left: 1.2rem;
+  display: grid;
+  place-items: center;
+  width: 3rem; height: 3rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-6deg);
+}
+.step--yellow .step__num { background: var(--yellow); }
+.step--pink .step__num { background: var(--pink); }
+.step--blue .step__num { background: var(--blue); }
+.how__cta { display: flex; justify-content: center; margin-top: 2.6rem; }
+
+/* ==========================================================================
+   8. Input page (form)
+   ========================================================================== */
+
+.form-section { padding-top: 1rem; }
+
+.form-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* The form looks like one big profile card */
+.form-card {
+  position: relative;
+  display: grid;
+  gap: 1.3rem;
+  padding: 2.6rem 1.6rem 1.8rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 32px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.form-card__tab { position: absolute; top: -1.1rem; left: 1.6rem; font-size: 1rem; }
+.form-card__link { margin: 0; text-align: center; font-weight: 700; }
+
+/* Each question sits in its own rounded, colored section */
+.field {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+}
+.field--yellow { background: #FFF0A8; }
+.field--pink { background: #FFD3DB; }
+.field--blue { background: #CDEEFF; }
+.field--green { background: #CFF5DC; }
+.field--purple { background: #E7DAFF; }
+
+.field__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+.field__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem; height: 2.1rem;
+  font-size: 1.15rem;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+/* A <legend> normally sits on the border line; floating it makes it behave like a normal label. */
+.rating-field > legend { float: left; width: 100%; }
+.rating-field > legend + * { clear: both; }
+
+.badge-req, .badge-opt {
+  padding: 0.05rem 0.55rem;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+.badge-req { background: var(--pink); }
+.badge-opt { background: var(--paper); }
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  transition: box-shadow 0.15s ease;
+}
+.input::placeholder { color: #5f6f66; }
+.input:focus { outline: none; box-shadow: 0 0 0 4px var(--yellow), 0 0 0 7px var(--ink); }
+.input[aria-invalid='true'] { border-color: #C2102E; background: #FFF1F3; }
+.input--area { resize: vertical; min-height: 7rem; }
+select.input { cursor: pointer; }
+
+.field__error {
+  min-height: 0;
+  margin: 0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #B00E2A;
+}
+.field__error:not(:empty) { margin-top: 0.5rem; }
+.field__foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.field__foot .field__error:empty { margin: 0; }
+.counter { margin-left: auto; margin-top: 0.4rem; font-weight: 800; font-size: 0.9rem; white-space: nowrap; }
+.counter--warn { color: #B00E2A; }
+
+/* Star picker */
+.star-picker { display: flex; gap: 0.25rem; }
+.star-picker label { display: block; cursor: pointer; padding: 0.15rem; border-radius: 10px; transition: transform 0.12s ease; }
+.star-picker label:hover { transform: scale(1.18) rotate(-6deg); }
+.star-picker svg {
+  display: block;
+  width: 2.6rem; height: 2.6rem;
+  fill: #fff;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transition: fill 0.15s ease;
+}
+.star-picker label.is-on svg { fill: var(--yellow); }
+.star-picker input:focus-visible + label { outline: 4px solid var(--ink); outline-offset: 2px; }
+.rating-field__row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem 1rem; margin-top: 0.4rem; }
+.rating-field__hint { font-weight: 700; font-size: 0.95rem; }
+.link-btn {
+  padding: 0;
+  font-weight: 800;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.form-error {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  font-weight: 800;
+  color: #7c0a1d;
+  background: #FFD3DB;
+  border: 3px solid #C2102E;
+  border-radius: 16px;
+}
+
+.btn--submit { width: 100%; }
+
+/* Live preview beside the form */
+.preview { position: sticky; top: 1.5rem; padding-top: 1.2rem; }
+.preview__tab { position: relative; z-index: 2; margin: 0 0 -0.6rem 1rem; }
+.pcard--ghost { opacity: 0.6; }
+
+/* Success message */
+.success {
+  margin: 0 auto 2.2rem;
+  max-width: 640px;
+  padding: 1.6rem 1.4rem;
+  text-align: center;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  border-radius: 32px;
+  box-shadow: 8px 8px 0 var(--ink);
+  animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.success:focus { outline: none; }
+.success__emoji { margin: 0; font-size: 3rem; line-height: 1; }
+.success__title { margin: 0.3rem 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 5vw, 2.4rem); line-height: 1.1; overflow-wrap: anywhere; }
+.success__text { margin: 0 0 1.2rem; font-weight: 700; }
+.success__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.9rem; }
+
+/* Confetti */
+.confetti { position: fixed; inset: 0; z-index: 90; overflow: hidden; pointer-events: none; }
+.confetti__piece {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: 12px; height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  animation: confetti-fall 2.6s ease-in var(--delay) forwards;
+}
+
+/* ==========================================================================
+   9. Gallery page (toolbar, chips, cards, modal)
+   ========================================================================== */
+
+.gallery { padding-top: 1rem; }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 260px;
+}
+.search__icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search__input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.8rem;
+  font-size: 1.05rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.search__input:focus { outline: none; box-shadow: 0 4px 0 var(--ink), 0 0 0 4px var(--yellow); }
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.4rem 0.35rem 1.1rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.sort__label { font-family: var(--font-head); font-weight: 700; }
+.sort__select {
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* Filter chips */
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.95rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.chip:hover { transform: translateY(-2px) rotate(-1.5deg); }
+.chip[aria-pressed='true'] {
+  background: var(--tag-bg, var(--yellow));
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.result-line { min-height: 1.5em; margin: 0 0 1rem; font-weight: 800; color: var(--cream); }
+.updated { margin: 2rem 0 0; text-align: center; font-size: 0.9rem; font-weight: 700; color: var(--cream); }
+
+/* Grid of profile cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 1.6rem;
+}
+
+/* A profile card. Same look in the gallery and in the live preview. */
+.pcard {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 1.2rem 1.15rem;
+  text-align: center;
+  color: var(--ink);
+  background: var(--paper);
+  border: 0;
+  border-radius: 28px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+/* A colored band behind the avatar */
+.pcard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 70px;
+  background: var(--av-bg, var(--sky));
+  opacity: 0.6;
+}
+button.pcard { cursor: pointer; width: 100%; }
+
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 84px; height: 84px;
+  margin-top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--ink);
+  background: var(--av-bg, var(--sky));
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 4px 0 rgba(20, 38, 28, 0.25);
+}
+.avatar--big { width: 128px; height: 128px; font-size: 2.8rem; margin-top: 0; }
+
+.pcard__name {
+  position: relative;
+  max-width: 100%;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.pcard__meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 0.6rem; }
+.pcard__about {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  background: #F3EBCF;
+  border-radius: 14px;
+}
+.pcard__date { margin-top: auto; padding-top: 0.2rem; font-size: 0.82rem; font-weight: 700; color: #4d5f55; }
+.pcard__demo {
+  position: absolute;
+  top: 0.6rem; right: 0.6rem;
+  padding: 0 0.5rem;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  transform: rotate(4deg);
+}
+
+@media (hover: hover) {
+  button.pcard:hover { transform: translateY(-8px) rotate(-0.6deg); box-shadow: var(--shadow-soft-lift); }
+  button.pcard:hover .sticker--class { transform: rotate(0deg) scale(1.08); }
+  button.pcard:hover .sticker--subject { transform: rotate(0deg) scale(1.08); }
+}
+button.pcard:active { transform: translateY(-2px) scale(0.99); }
+.sticker { transition: transform 0.2s ease; }
+
+/* Skeleton loading cards */
+.pcard--skeleton { min-height: 280px; background: linear-gradient(100deg, #f4ecd0 30%, #fffbef 50%, #f4ecd0 70%) 0 0 / 300% 100%; animation: shimmer 1.4s linear infinite; }
+.pcard--skeleton::before { display: none; }
+
+/* Stars */
+.stars { display: inline-flex; gap: 0.1rem; }
+.stars__star { width: 1.4rem; height: 1.4rem; fill: #E9E0C0; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.stars__star.is-on { fill: var(--yellow); }
+.stars--big .stars__star { width: 2rem; height: 2rem; }
+
+/* Friendly messages: empty, no results, error */
+.message {
+  max-width: 540px;
+  margin: 1.5rem auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 32px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.message__emoji { margin: 0; font-size: 3rem; line-height: 1; }
+.message__title { margin: 0.4rem 0; font-family: var(--font-head); font-size: 1.7rem; line-height: 1.2; }
+.message p:not(.message__emoji) { margin: 0 0 1.2rem; font-weight: 600; }
+
+/* The detail modal */
+.modal {
+  width: min(560px, 100% - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
+  padding: 0;
+  overflow: visible;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+}
+.modal::backdrop { background: rgba(6, 52, 33, 0.72); backdrop-filter: blur(4px); }
+.modal[open] { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.modal__panel {
+  position: relative;
+  max-height: calc(100dvh - 1.5rem);
+  overflow: auto;
+  padding: 2.2rem 1.6rem 1.8rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 32px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.modal__close {
+  position: absolute;
+  top: 0.8rem; right: 0.8rem;
+  display: grid;
+  place-items: center;
+  width: 2.6rem; height: 2.6rem;
+  padding: 0 0 0.2rem;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.8rem;
+  line-height: 1;
+  background: var(--pink);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.modal__close:hover { transform: rotate(90deg) scale(1.08); }
+body:has(dialog[open]) { overflow: hidden; }
+
+.detail { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; text-align: center; }
+.detail__name { margin: 0; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.8rem, 6vw, 2.3rem); line-height: 1.1; overflow-wrap: anywhere; }
+.detail__meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+/* Full subject names can be long: let the sticker wrap onto several lines */
+.detail__meta .sticker--subject { max-width: 100%; text-align: left; border-radius: 20px; }
+.detail__block { width: 100%; padding: 0.9rem 1rem; background: #F3EBCF; border-radius: 18px; }
+.detail__heading { margin: 0 0 0.4rem; font-family: var(--font-head); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.detail__note { margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+.detail__muted { margin: 0; color: #4d5f55; font-weight: 600; }
+.detail__date { margin: 0; font-weight: 700; font-size: 0.9rem; color: #4d5f55; }
+.detail__demo { margin: 0; font-weight: 800; font-size: 0.85rem; }
+
+/* ==========================================================================
+   10. Footer (blue water)
+   ========================================================================== */
+
+.footer { position: relative; margin-top: -1px; background: #A8E4FF; }
+.footer__wave { position: absolute; left: 0; top: -69px; width: 100%; height: 70px; fill: #A8E4FF; }
+.footer__inner { padding: 2.5rem 1rem 2.8rem; text-align: center; }
+.footer__big { margin: 0 0 0.3rem; font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem); }
+.footer__small { margin: 0 0 0.8rem; font-weight: 700; }
+.footer__links { margin: 0; font-family: var(--font-head); font-weight: 600; }
+.footer--small .footer__inner { padding-block: 1.6rem 2rem; }
+
+/* ==========================================================================
+   11. Animations
+   ========================================================================== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 4deg)); }
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.7) rotate(20deg); opacity: 0.7; }
+}
+@keyframes drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 460px)); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.85) translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@keyframes confetti-fall {
+  to { transform: translate(var(--drift), 105vh) rotate(var(--spin)); opacity: 0.9; }
+}
+
+/* Cards pop in one after another when new data arrives */
+.grid--animate .pcard { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+
+/* ==========================================================================
+   12. Small screens + reduced motion
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .form-layout { grid-template-columns: minmax(0, 1fr); }
+  .preview { display: none; }
+}
+
+/* The bar gets crowded on tablets: brand + language switch on top, links below, badge last */
+@media (max-width: 900px) {
+  .site-nav {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    border-radius: 28px;
+  }
+  .site-nav__tools { display: contents; } /* let the badge and switch join the bar's own layout */
+  .site-nav__brand { order: 1; }
+  .lang-switch { order: 2; }
+  .site-nav__links { order: 3; width: 100%; justify-content: center; }
+  .mode-badge { order: 4; margin: 0 auto; }
+}
+
+@media (max-width: 720px) {
+  .mode-badge { font-size: 0.78rem; padding: 0.25rem 0.65rem; }
+
+  .hero { padding-bottom: 8rem; }
+  .page-head { padding-bottom: 4.5rem; }
+
+  /* Keep decorations at the edges so they never cover the text */
+  .deco--book { left: -1%; top: 62%; }
+  .deco--calculator { left: 18%; top: 82%; }
+  .deco--pencil { right: -3%; top: 24%; --size: 62px; }
+  .deco--globe { right: 4%; top: 76%; }
+  .hero .deco--s2, .deco--squiggle, .deco--s3 { display: none; }
+  .deco--head-left { left: -2%; right: auto; top: 58%; opacity: 0.9; }
+  .deco--head-right { right: -2%; left: auto; top: 58%; opacity: 0.9; }
+
+  .btn--big { width: 100%; }
+  .toolbar { flex-direction: column; }
+  .search { flex: none; } /* in a column, the row-layout "260px" would become a height */
+  .sort { justify-content: space-between; }
+  .form-card { padding-inline: 1rem; }
+}
+
+/* People who prefer less motion get a calm page */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cloud { display: none; }
+}
+
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+<div class="view" id="view-home" data-view="home" hidden>
+<header class="hero">
+    <nav class="site-nav" aria-label="Main" data-i18n-attr="aria-label:nav.label">
+      <a class="site-nav__brand" href="#home"><span aria-hidden="true">★</span> <span data-i18n="nav.brand">Fav Subject</span></a>
+      <ul class="site-nav__links">
+        <li><a href="#home" aria-current="page" data-i18n="nav.home">Home</a></li>
+        <li><a href="#input" data-i18n="nav.fillIn">Fill In</a></li>
+        <li><a href="#profiles" data-i18n="nav.profiles">Profiles</a></li>
+      </ul>
+      <div class="site-nav__tools">
+        <span class="mode-badge" data-mode="loading" title="Where profiles are saved" data-i18n-attr="title:mode.title">
+          <span class="mode-badge__dot" aria-hidden="true"></span>
+          <span class="mode-badge__text">Checking...</span>
+        </span>
+        <div class="lang-switch" role="group" aria-label="Language" data-i18n-attr="aria-label:lang.label">
+          <button class="lang-switch__btn" type="button" data-lang="id" lang="id" title="Bahasa Indonesia">ID</button>
+          <button class="lang-switch__btn" type="button" data-lang="en" lang="en" title="English">EN</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Decorations (purely visual, hidden from screen readers) -->
+    <div class="hero__decor" aria-hidden="true">
+      <span class="cloud cloud--1"></span>
+      <span class="cloud cloud--2"></span>
+      <img class="deco deco--sparkle deco--s1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--sparkle deco--s2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--sparkle deco--s3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--book" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cGF0aCBkPSJNNiA0MiBMNiAxMDAgTDYwIDExMCBMMTE0IDEwMCBMMTE0IDQyIiBmaWxsPSIjRkY1QzdBIi8+CiAgPHBhdGggZD0iTTEyIDI2IEMzMCAyMiA0OCAyNiA2MCAzNiBMNjAgMTAwIEM0OCA5MCAzMCA4NiAxMiA5MCBaIiBmaWxsPSIjRkZGNEQ2Ii8+CiAgPHBhdGggZD0iTTEwOCAyNiBDOTAgMjIgNzIgMjYgNjAgMzYgTDYwIDEwMCBDNzIgOTAgOTAgODYgMTA4IDkwIFoiIGZpbGw9IiNGRkY0RDYiLz4KICA8cGF0aCBkPSJNMjIgNDQgQzMyIDQyIDQyIDQ0IDUwIDQ5IE0yMiA1OCBDMzIgNTYgNDIgNTggNTAgNjMgTTIyIDcyIEMzMiA3MCA0MiA3MiA1MCA3NyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiMzOEI2RkYiLz4KICA8cGF0aCBkPSJNOTggNDQgQzg4IDQyIDc4IDQ0IDcwIDQ5IE05OCA1OCBDODggNTYgNzggNTggNzAgNjMiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlPSIjMzhCNkZGIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--pencil" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtNDUgNjAgNjApIj4KICAgIDxyZWN0IHg9IjIyIiB5PSI0NiIgd2lkdGg9IjYyIiBoZWlnaHQ9IjI4IiBmaWxsPSIjRkZENDNCIi8+CiAgICA8cGF0aCBkPSJNMzIgNDYgVjc0IE00OCA0NiBWNzQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlPSIjRTVBODAwIi8+CiAgICA8cGF0aCBkPSJNODQgNDYgTDExMiA2MCBMODQgNzQgWiIgZmlsbD0iI0ZGRTJCOCIvPgogICAgPHBhdGggZD0iTTEwMiA1NSBMMTEyIDYwIEwxMDIgNjUgWiIgZmlsbD0iIzE0MjYxQyIvPgogICAgPHJlY3QgeD0iOCIgeT0iNDYiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyOCIgcng9IjUiIGZpbGw9IiNGRjVDN0EiLz4KICAgIDxwYXRoIGQ9Ik0yMiA0NiBWNzQiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--calculator" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cmVjdCB4PSIyMiIgeT0iOCIgd2lkdGg9Ijc2IiBoZWlnaHQ9IjEwNCIgcng9IjE0IiBmaWxsPSIjMzhCNkZGIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjE4IiB3aWR0aD0iNTYiIGhlaWdodD0iMjQiIHJ4PSI2IiBmaWxsPSIjRkZGNEQ2Ii8+CiAgPHBhdGggZD0iTTc0IDMwIEg4MiIgc3Ryb2tlLXdpZHRoPSI0Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI1OCIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjU4IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNTgiIHI9IjYiIGZpbGw9IiNGRjVDN0EiIHN0cm9rZS13aWR0aD0iMy41Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI3NiIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9Ijc2IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNzYiIHI9IjYiIGZpbGw9IiNGRjVDN0EiIHN0cm9rZS13aWR0aD0iMy41Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI5NCIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9Ijk0IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iOTQiIHI9IjYiIGZpbGw9IiM1QkUwOEEiIHN0cm9rZS13aWR0aD0iMy41Ii8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--globe" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cGF0aCBkPSJNMzAgMTA4IEg5MCBNNjAgOTYgVjEwOCIvPgogIDxjaXJjbGUgY3g9IjYwIiBjeT0iNTQiIHI9IjQyIiBmaWxsPSIjMzhCNkZGIi8+CiAgPHBhdGggZD0iTTM0IDMwIEM0NCAyMiA1NCAyOCA1MiAzOCBDNTAgNDYgNDAgNDYgMzggNTQgQzM2IDYyIDI2IDU4IDI0IDQ4IEMyNCA0MCAyOCAzNCAzNCAzMCBaIiBmaWxsPSIjNUJFMDhBIi8+CiAgPHBhdGggZD0iTTcwIDQ2IEM4MiA0MCA5NCA0OCA5MiA2MCBDOTAgNzIgODAgNzQgNzYgODQgQzcwIDkyIDY0IDg0IDY2IDc0IEM2OCA2NiA2MiA2MiA2NCA1NCBDNjUgNTAgNjcgNDggNzAgNDYgWiIgZmlsbD0iIzVCRTA4QSIvPgogIDxwYXRoIGQ9Ik02MCAxMiBDNDQgMzAgNDQgNzggNjAgOTYgTTYwIDEyIEM3NiAzMCA3NiA3OCA2MCA5NiBNMTggNTQgSDEwMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2U9IiNGRkY0RDYiLz4KICA8cGF0aCBkPSJNMTYgMjAgQzQgMzQgMiA2MiAxMiA4MiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNGRkQ0M0IiLz4KPC9zdmc+Cg==" alt="">
+      <img class="deco deco--squiggle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGNUM3QSIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxwYXRoIGQ9Ik04IDI0IEMyNCA0IDM2IDQgNDggMjAgQzYwIDM2IDcyIDM2IDg0IDIwIEM5NiA0IDEwOCA0IDEyMCAyMCBDMTMwIDMyIDE0MiAzMiAxNTIgMTYiLz4KPC9zdmc+Cg==" alt="">
+    </div>
+
+    <div class="hero__content">
+      <p class="sticker sticker--yellow hero__kicker" data-i18n="home.kicker">★ Class Yearbook Project ★</p>
+      <h1 class="hero__title">
+        <span class="hero__title-small" data-i18n="home.title1">What's your</span>
+        <span class="hero__title-big" data-i18n="home.title2">Favorite</span>
+        <span class="hero__title-small" data-i18n="home.title3">Subject?</span>
+      </h1>
+      <p class="hero__lead" data-i18n="home.lead">
+        Make your own profile card, rate your favorite class and tell us why you love it.
+        Then meet the whole school in the gallery!
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--yellow btn--big" href="#input"><span aria-hidden="true">✏️</span> <span data-i18n="home.ctaFill">Fill In Your Profile</span></a>
+        <a class="btn btn--pink btn--big" href="#profiles"><span aria-hidden="true">🎓</span> <span data-i18n="home.ctaSee">See Everyone's Profiles</span></a>
+      </div>
+    </div>
+
+    <!-- Green hills that flow into the next section -->
+    <svg class="hero__hills" viewBox="0 0 1440 220" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="#137A4B" d="M0,120 C120,60 240,50 360,90 C480,130 560,150 700,100 C840,50 960,30 1100,80 C1240,130 1340,110 1440,70 L1440,220 L0,220 Z"/>
+      <circle cx="210" cy="92" r="34" fill="#0B4D31"/><circle cx="262" cy="104" r="24" fill="#0B4D31"/>
+      <circle cx="1190" cy="98" r="30" fill="#0B4D31"/><circle cx="1236" cy="110" r="20" fill="#0B4D31"/>
+      <path fill="#1A9A5F" d="M0,170 C160,130 300,140 440,165 C600,195 760,175 900,150 C1060,120 1240,140 1440,175 L1440,220 L0,220 Z"/>
+    </svg>
+  </header>
+
+  <main>
+    <!-- ===== LIVE STATS ===== -->
+    <section class="section section--green stats" aria-labelledby="stats-title">
+      <div class="container">
+        <h2 class="section__title" id="stats-title" data-i18n="stat.title">Live Scoreboard</h2>
+        <div class="stats__row" id="statsRow" aria-live="polite">
+          <div class="stat-card stat-card--pink">
+            <span class="stat-card__label" data-i18n="stat.students">Students so far</span>
+            <span class="stat-card__value" id="statTotal">-</span>
+          </div>
+          <div class="stat-card stat-card--yellow">
+            <span class="stat-card__label" data-i18n="stat.top">Most popular subject</span>
+            <span class="stat-card__value stat-card__value--subject" id="statTop">-</span>
+            <span class="stat-card__sub" id="statTopSub"></span>
+          </div>
+          <div class="stat-card stat-card--blue">
+            <span class="stat-card__label" data-i18n="stat.rating">Average rating</span>
+            <span class="stat-card__value" id="statRating">-</span>
+          </div>
+        </div>
+        <p class="stats__error" id="statsError" data-i18n="stat.error" hidden>Could not load the scoreboard right now. Is the server running?</p>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="section section--green how" aria-labelledby="how-title">
+      <div class="container">
+        <h2 class="section__title" id="how-title" data-i18n="how.title">How It Works</h2>
+        <ol class="how__steps">
+          <li class="step step--yellow">
+            <span class="step__num" aria-hidden="true">1</span>
+            <h3 class="step__title" data-i18n="how.1.title">Fill in the card</h3>
+            <p data-i18n="how.1.text">Add your name, class and favorite subject. Rating and a note are optional.</p>
+          </li>
+          <li class="step step--pink">
+            <span class="step__num" aria-hidden="true">2</span>
+            <h3 class="step__title" data-i18n="how.2.title">Get your profile</h3>
+            <p data-i18n="how.2.text">Your card pops up in the gallery with a colorful avatar made from your initials.</p>
+          </li>
+          <li class="step step--blue">
+            <span class="step__num" aria-hidden="true">3</span>
+            <h3 class="step__title" data-i18n="how.3.title">Meet the class</h3>
+            <p data-i18n="how.3.text">Search, filter by subject and sort to find friends who love the same class.</p>
+          </li>
+        </ol>
+        <div class="how__cta">
+          <a class="btn btn--yellow btn--big" href="#input"><span aria-hidden="true">✏️</span> <span data-i18n="how.cta">Add my card</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER (blue water wave) ===== -->
+  <footer class="footer">
+    <svg class="footer__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,50 C180,100 360,0 540,40 C720,80 900,90 1080,40 C1220,5 1340,20 1440,50 L1440,90 L0,90 Z"/>
+    </svg>
+    <div class="footer__inner">
+      <p class="footer__big" data-i18n="footer.big">Made for our class ❤</p>
+      <p class="footer__small" data-i18n="footer.small">A school project built with HTML, CSS, JavaScript and Google Sheets.</p>
+      <p class="footer__links"><a href="#input" data-i18n="footer.fill">Fill in your profile</a> · <a href="#profiles" data-i18n="footer.all">See all profiles</a></p>
+    </div>
+  </footer>
+</div>
+
+<div class="view" id="view-input" data-view="input" hidden>
+<header class="page-head">
+    <nav class="site-nav" aria-label="Main" data-i18n-attr="aria-label:nav.label">
+      <a class="site-nav__brand" href="#home"><span aria-hidden="true">★</span> <span data-i18n="nav.brand">Fav Subject</span></a>
+      <ul class="site-nav__links">
+        <li><a href="#home" data-i18n="nav.home">Home</a></li>
+        <li><a href="#input" aria-current="page" data-i18n="nav.fillIn">Fill In</a></li>
+        <li><a href="#profiles" data-i18n="nav.profiles">Profiles</a></li>
+      </ul>
+      <div class="site-nav__tools">
+        <span class="mode-badge" data-mode="loading" title="Where profiles are saved" data-i18n-attr="title:mode.title">
+          <span class="mode-badge__dot" aria-hidden="true"></span>
+          <span class="mode-badge__text">Checking...</span>
+        </span>
+        <div class="lang-switch" role="group" aria-label="Language" data-i18n-attr="aria-label:lang.label">
+          <button class="lang-switch__btn" type="button" data-lang="id" lang="id" title="Bahasa Indonesia">ID</button>
+          <button class="lang-switch__btn" type="button" data-lang="en" lang="en" title="English">EN</button>
+        </div>
+      </div>
+    </nav>
+    <div class="page-head__decor" aria-hidden="true">
+      <img class="deco deco--sparkle deco--s1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--sparkle deco--s2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--pencil deco--head-left" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtNDUgNjAgNjApIj4KICAgIDxyZWN0IHg9IjIyIiB5PSI0NiIgd2lkdGg9IjYyIiBoZWlnaHQ9IjI4IiBmaWxsPSIjRkZENDNCIi8+CiAgICA8cGF0aCBkPSJNMzIgNDYgVjc0IE00OCA0NiBWNzQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlPSIjRTVBODAwIi8+CiAgICA8cGF0aCBkPSJNODQgNDYgTDExMiA2MCBMODQgNzQgWiIgZmlsbD0iI0ZGRTJCOCIvPgogICAgPHBhdGggZD0iTTEwMiA1NSBMMTEyIDYwIEwxMDIgNjUgWiIgZmlsbD0iIzE0MjYxQyIvPgogICAgPHJlY3QgeD0iOCIgeT0iNDYiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyOCIgcng9IjUiIGZpbGw9IiNGRjVDN0EiLz4KICAgIDxwYXRoIGQ9Ik0yMiA0NiBWNzQiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--book deco--head-right" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cGF0aCBkPSJNNiA0MiBMNiAxMDAgTDYwIDExMCBMMTE0IDEwMCBMMTE0IDQyIiBmaWxsPSIjRkY1QzdBIi8+CiAgPHBhdGggZD0iTTEyIDI2IEMzMCAyMiA0OCAyNiA2MCAzNiBMNjAgMTAwIEM0OCA5MCAzMCA4NiAxMiA5MCBaIiBmaWxsPSIjRkZGNEQ2Ii8+CiAgPHBhdGggZD0iTTEwOCAyNiBDOTAgMjIgNzIgMjYgNjAgMzYgTDYwIDEwMCBDNzIgOTAgOTAgODYgMTA4IDkwIFoiIGZpbGw9IiNGRkY0RDYiLz4KICA8cGF0aCBkPSJNMjIgNDQgQzMyIDQyIDQyIDQ0IDUwIDQ5IE0yMiA1OCBDMzIgNTYgNDIgNTggNTAgNjMgTTIyIDcyIEMzMiA3MCA0MiA3MiA1MCA3NyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiMzOEI2RkYiLz4KICA8cGF0aCBkPSJNOTggNDQgQzg4IDQyIDc4IDQ0IDcwIDQ5IE05OCA1OCBDODggNTYgNzggNTggNzAgNjMiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlPSIjMzhCNkZGIi8+Cjwvc3ZnPgo=" alt="">
+    </div>
+    <div class="page-head__content">
+      <h1 class="page-head__title"><span class="page-head__plain" data-i18n="input.title1">Your Profile</span> <span data-i18n="input.title2">Card</span></h1>
+      <p class="page-head__lead" data-i18n="input.lead">Two minutes, five little questions. Only the first three are required.</p>
+    </div>
+    <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,40 C240,100 480,0 720,40 C960,80 1200,10 1440,50 L1440,90 L0,90 Z"/>
+    </svg>
+  </header>
+
+  <main class="section section--green form-section">
+    <div class="container">
+
+      <!-- Success message (hidden until a profile is saved) -->
+      <div class="success" id="success" role="status" tabindex="-1" hidden>
+        <p class="success__emoji" aria-hidden="true">🎉</p>
+        <h2 class="success__title" id="successTitle">Woohoo!</h2>
+        <p class="success__text" data-i18n="success.text">Your profile card is now in the gallery. Go say hi to the class!</p>
+        <div class="success__actions">
+          <a class="btn btn--pink" href="#profiles" data-i18n="success.gallery">See the gallery</a>
+          <button class="btn" type="button" id="addAnother" data-i18n="success.another">Add another profile</button>
+        </div>
+      </div>
+
+      <div class="form-layout">
+        <form class="form-card" id="profileForm" novalidate>
+          <p class="form-card__tab sticker sticker--pink" data-i18n="input.tab">★ My Profile Card</p>
+
+          <!-- 1. Name -->
+          <div class="field field--yellow">
+            <label class="field__label" for="name"><span class="field__icon" aria-hidden="true">🙂</span> <span data-i18n="input.name.label">What's your name?</span> <span class="badge-req" data-i18n="input.required">required</span></label>
+            <input class="input" type="text" id="name" name="name" maxlength="40" autocomplete="off" placeholder="e.g. Aisyah Putri" data-i18n-attr="placeholder:input.name.placeholder" aria-describedby="name-error" required>
+            <p class="field__error" id="name-error" role="alert"></p>
+          </div>
+
+          <!-- 2. Class -->
+          <div class="field field--pink">
+            <label class="field__label" for="className"><span class="field__icon" aria-hidden="true">🏫</span> <span data-i18n="input.class.label">Which class are you in?</span> <span class="badge-req" data-i18n="input.required">required</span></label>
+            <input class="input" type="text" id="className" name="className" maxlength="20" autocomplete="off" placeholder="e.g. 7A or 8B" data-i18n-attr="placeholder:input.class.placeholder" aria-describedby="className-error" required>
+            <p class="field__error" id="className-error" role="alert"></p>
+          </div>
+
+          <!-- 3. Favorite subject (the options are added by input.js from the official list) -->
+          <div class="field field--blue">
+            <label class="field__label" for="subject"><span class="field__icon" aria-hidden="true">📚</span> <span data-i18n="input.subject.label">Your favorite subject</span> <span class="badge-req" data-i18n="input.required">required</span></label>
+            <select class="input" id="subject" name="subject" aria-describedby="subject-error" required>
+              <option value="" data-i18n="input.subject.choose">Choose a subject...</option>
+            </select>
+            <p class="field__error" id="subject-error" role="alert"></p>
+          </div>
+
+          <!-- 4. Rating (optional) -->
+          <fieldset class="field field--green rating-field">
+            <legend class="field__label"><span class="field__icon" aria-hidden="true">⭐</span> <span data-i18n="input.rating.label">How much do you like it?</span> <span class="badge-opt" data-i18n="input.optional">optional</span></legend>
+            <div class="star-picker" id="starPicker">
+              <!-- five radio buttons, each with a star label (built by input.js) -->
+            </div>
+            <div class="rating-field__row">
+              <span class="rating-field__hint" id="ratingHint">Tap a star, or skip this one.</span>
+              <button class="link-btn" type="button" id="clearRating" data-i18n="input.rating.clear" hidden>Clear rating</button>
+            </div>
+          </fieldset>
+
+          <!-- 5. Note (optional) -->
+          <div class="field field--purple">
+            <label class="field__label" for="note"><span class="field__icon" aria-hidden="true">💬</span> <span data-i18n="input.note.label">Why do you like it?</span> <span class="badge-opt" data-i18n="input.optional">optional</span></label>
+            <textarea class="input input--area" id="note" name="note" maxlength="200" rows="4" placeholder="Why do you like it?" data-i18n-attr="placeholder:input.note.placeholder" aria-describedby="note-count note-error"></textarea>
+            <div class="field__foot">
+              <p class="field__error" id="note-error" role="alert"></p>
+              <span class="counter" id="note-count">0 / 200</span>
+            </div>
+          </div>
+
+          <p class="form-error" id="formError" role="alert" hidden></p>
+
+          <button class="btn btn--yellow btn--big btn--submit" type="submit" id="submitBtn">
+            <span class="btn__label" data-i18n="input.submit">Add me to the gallery!</span>
+          </button>
+          <p class="form-card__link"><span data-i18n="input.lookAround">Just want to look around?</span> <a href="#profiles" data-i18n="input.seeGallery">See the profile gallery</a></p>
+        </form>
+
+        <!-- Live preview of the card being filled in (desktop only) -->
+        <aside class="preview" aria-hidden="true">
+          <p class="sticker sticker--yellow preview__tab" data-i18n="input.preview">Live preview</p>
+          <div id="previewSlot"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer footer--small">
+    <svg class="footer__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,50 C180,100 360,0 540,40 C720,80 900,90 1080,40 C1220,5 1340,20 1440,50 L1440,90 L0,90 Z"/>
+    </svg>
+    <div class="footer__inner">
+      <p class="footer__links"><a href="#home" data-i18n="footer.home">Home</a> · <a href="#profiles" data-i18n="footer.all">See all profiles</a></p>
+    </div>
+  </footer>
+</div>
+
+<div class="view" id="view-profiles" data-view="profiles" hidden>
+<header class="page-head">
+    <nav class="site-nav" aria-label="Main" data-i18n-attr="aria-label:nav.label">
+      <a class="site-nav__brand" href="#home"><span aria-hidden="true">★</span> <span data-i18n="nav.brand">Fav Subject</span></a>
+      <ul class="site-nav__links">
+        <li><a href="#home" data-i18n="nav.home">Home</a></li>
+        <li><a href="#input" data-i18n="nav.fillIn">Fill In</a></li>
+        <li><a href="#profiles" aria-current="page" data-i18n="nav.profiles">Profiles</a></li>
+      </ul>
+      <div class="site-nav__tools">
+        <span class="mode-badge" data-mode="loading" title="Where profiles are saved" data-i18n-attr="title:mode.title">
+          <span class="mode-badge__dot" aria-hidden="true"></span>
+          <span class="mode-badge__text">Checking...</span>
+        </span>
+        <div class="lang-switch" role="group" aria-label="Language" data-i18n-attr="aria-label:lang.label">
+          <button class="lang-switch__btn" type="button" data-lang="id" lang="id" title="Bahasa Indonesia">ID</button>
+          <button class="lang-switch__btn" type="button" data-lang="en" lang="en" title="English">EN</button>
+        </div>
+      </div>
+    </nav>
+    <div class="page-head__decor" aria-hidden="true">
+      <img class="deco deco--sparkle deco--s1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--sparkle deco--s2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cGF0aCBkPSJNNTAgNCBDNTQgMzIgNjggNDYgOTYgNTAgQzY4IDU0IDU0IDY4IDUwIDk2IEM0NiA2OCAzMiA1NCA0IDUwIEMzMiA0NiA0NiAzMiA1MCA0IFoiIGZpbGw9IiNGRkQ0M0IiIHN0cm9rZT0iIzE0MjYxQyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="">
+      <img class="deco deco--globe deco--head-left" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cGF0aCBkPSJNMzAgMTA4IEg5MCBNNjAgOTYgVjEwOCIvPgogIDxjaXJjbGUgY3g9IjYwIiBjeT0iNTQiIHI9IjQyIiBmaWxsPSIjMzhCNkZGIi8+CiAgPHBhdGggZD0iTTM0IDMwIEM0NCAyMiA1NCAyOCA1MiAzOCBDNTAgNDYgNDAgNDYgMzggNTQgQzM2IDYyIDI2IDU4IDI0IDQ4IEMyNCA0MCAyOCAzNCAzNCAzMCBaIiBmaWxsPSIjNUJFMDhBIi8+CiAgPHBhdGggZD0iTTcwIDQ2IEM4MiA0MCA5NCA0OCA5MiA2MCBDOTAgNzIgODAgNzQgNzYgODQgQzcwIDkyIDY0IDg0IDY2IDc0IEM2OCA2NiA2MiA2MiA2NCA1NCBDNjUgNTAgNjcgNDggNzAgNDYgWiIgZmlsbD0iIzVCRTA4QSIvPgogIDxwYXRoIGQ9Ik02MCAxMiBDNDQgMzAgNDQgNzggNjAgOTYgTTYwIDEyIEM3NiAzMCA3NiA3OCA2MCA5NiBNMTggNTQgSDEwMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2U9IiNGRkY0RDYiLz4KICA8cGF0aCBkPSJNMTYgMjAgQzQgMzQgMiA2MiAxMiA4MiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNGRkQ0M0IiLz4KPC9zdmc+Cg==" alt="">
+      <img class="deco deco--calculator deco--head-right" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNDI2MUMiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICA8cmVjdCB4PSIyMiIgeT0iOCIgd2lkdGg9Ijc2IiBoZWlnaHQ9IjEwNCIgcng9IjE0IiBmaWxsPSIjMzhCNkZGIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjE4IiB3aWR0aD0iNTYiIGhlaWdodD0iMjQiIHJ4PSI2IiBmaWxsPSIjRkZGNEQ2Ii8+CiAgPHBhdGggZD0iTTc0IDMwIEg4MiIgc3Ryb2tlLXdpZHRoPSI0Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI1OCIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjU4IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNTgiIHI9IjYiIGZpbGw9IiNGRjVDN0EiIHN0cm9rZS13aWR0aD0iMy41Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI3NiIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9Ijc2IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNzYiIHI9IjYiIGZpbGw9IiNGRjVDN0EiIHN0cm9rZS13aWR0aD0iMy41Ii8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSI5NCIgcj0iNiIgZmlsbD0iI0ZGRDQzQiIgc3Ryb2tlLXdpZHRoPSIzLjUiLz4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9Ijk0IiByPSI2IiBmaWxsPSIjRkZENDNCIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iOTQiIHI9IjYiIGZpbGw9IiM1QkUwOEEiIHN0cm9rZS13aWR0aD0iMy41Ii8+Cjwvc3ZnPgo=" alt="">
+    </div>
+    <div class="page-head__content">
+      <h1 class="page-head__title"><span class="page-head__plain" data-i18n="profiles.title1">Meet The</span> <span data-i18n="profiles.title2">Class</span></h1>
+      <p class="page-head__lead" data-i18n="profiles.lead">Everyone's favorite subject in one place. Tap a card to see the full profile.</p>
+    </div>
+    <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,40 C240,100 480,0 720,40 C960,80 1200,10 1440,50 L1440,90 L0,90 Z"/>
+    </svg>
+  </header>
+
+  <main class="section section--green gallery">
+    <div class="container">
+
+      <!-- Search and sort -->
+      <div class="toolbar">
+        <div class="search">
+          <label class="sr-only" for="search" data-i18n="profiles.searchLabel">Search by name</label>
+          <span class="search__icon" aria-hidden="true">🔍</span>
+          <input class="search__input" type="search" id="search" placeholder="Search by name..." data-i18n-attr="placeholder:profiles.searchPlaceholder" autocomplete="off" maxlength="40">
+        </div>
+        <div class="sort">
+          <label class="sort__label" for="sort" data-i18n="profiles.sortBy">Sort by</label>
+          <select class="sort__select" id="sort">
+            <option value="newest" data-i18n="profiles.sort.newest">Newest first</option>
+            <option value="name" data-i18n="profiles.sort.name">Name A-Z</option>
+            <option value="rating" data-i18n="profiles.sort.rating">Highest rated</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Subject filter chips (built from the data by profiles.js) -->
+      <div class="chips" id="chips" role="group" aria-label="Filter by favorite subject" data-i18n-attr="aria-label:profiles.chipsLabel"></div>
+
+      <p class="result-line" id="resultLine" aria-live="polite"></p>
+
+      <!-- Loading state: skeleton cards -->
+      <div class="grid" id="loading" aria-busy="true" aria-label="Loading profiles" data-i18n-attr="aria-label:profiles.loading">
+        <div class="pcard pcard--skeleton"></div>
+        <div class="pcard pcard--skeleton"></div>
+        <div class="pcard pcard--skeleton"></div>
+        <div class="pcard pcard--skeleton"></div>
+      </div>
+
+      <!-- The real grid of profile cards -->
+      <div class="grid" id="grid" hidden></div>
+
+      <!-- Friendly messages -->
+      <div class="message" id="emptyState" hidden>
+        <p class="message__emoji" aria-hidden="true">🌱</p>
+        <h2 class="message__title" data-i18n="profiles.empty.title">No profiles yet, be the first!</h2>
+        <p data-i18n="profiles.empty.text">The gallery is waiting for its very first card.</p>
+        <a class="btn btn--yellow" href="#input" data-i18n="profiles.empty.cta">Fill in your profile</a>
+      </div>
+      <div class="message" id="noResults" hidden>
+        <p class="message__emoji" aria-hidden="true">🔎</p>
+        <h2 class="message__title" data-i18n="profiles.none.title">Nobody matches that</h2>
+        <p data-i18n="profiles.none.text">Try a different name or pick another subject.</p>
+        <button class="btn" type="button" id="resetFilters" data-i18n="profiles.none.cta">Show everyone</button>
+      </div>
+      <div class="message" id="errorState" hidden>
+        <p class="message__emoji" aria-hidden="true">😵</p>
+        <h2 class="message__title" data-i18n="profiles.error.title">Could not load the profiles</h2>
+        <p data-i18n="profiles.error.text">Something went wrong talking to the server.</p>
+        <button class="btn btn--pink" type="button" id="retry" data-i18n="profiles.error.cta">Try again</button>
+      </div>
+
+      <p class="updated" id="updated"></p>
+    </div>
+  </main>
+
+  <!-- Detail view: a native <dialog>. It closes with Escape, the close button or a click on the backdrop. -->
+  <dialog class="modal" id="detail" aria-labelledby="detailName">
+    <div class="modal__panel" id="detailPanel">
+      <button class="modal__close" type="button" id="detailClose" aria-label="Close profile" data-i18n-attr="aria-label:profiles.close">×</button>
+      <div id="detailBody"></div>
+    </div>
+  </dialog>
+
+  <footer class="footer footer--small">
+    <svg class="footer__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,50 C180,100 360,0 540,40 C720,80 900,90 1080,40 C1220,5 1340,20 1440,50 L1440,90 L0,90 Z"/>
+    </svg>
+    <div class="footer__inner">
+      <p class="footer__links"><a href="#home" data-i18n="footer.home">Home</a> · <a href="#input" data-i18n="footer.fill">Fill in your profile</a></p>
+    </div>
+  </footer>
+</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
