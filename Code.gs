@@ -1,125 +1,103 @@
 /**
- * Code.gs - Google Apps Script backend for the "Favorite Subject" project.
+ * Code.gs - backend Google Apps Script untuk survei "Mata Pelajaran Favorit".
+ * Letakkan di dalam Google Sheet (Extensions > Apps Script).
  *
- * This script lives INSIDE your Google Sheet (Extensions > Apps Script).
- * The website (app.js) talks to it like a tiny API:
+ *   POST -> doPost(e)  menambah satu baris jawaban
+ *   GET  -> doGet(e)   mengirim data ringkas (mapel + rating) untuk papan skor
  *
- *   POST  -> doPost(e)  adds one row to the sheet
- *   GET   -> doGet(e)   returns every row as JSON
- *
- * The sheet must have this header row in row 1:
- *   Timestamp | Name | Class | FavoriteSubject | Rating | Note
- *
- * IMPORTANT: after you change this file you must create a NEW deployment
- * version (Deploy > Manage deployments > pencil icon > Version: New version > Deploy).
+ * Tab dan baris judul dibuat OTOMATIS kalau belum ada, jadi tidak perlu disiapkan manual.
+ * Setelah mengubah file ini: Deploy > Manage deployments > pensil > Version: New version > Deploy.
  */
 
-// The tab (sheet) inside the spreadsheet that we read from and write to.
-// Leave empty ('') to use the FIRST tab instead.
 var SHEET_NAME = 'Favorite Subject';
-
-// The same limits the website (app.js) uses.
-// (subject is 60 because official names like "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)" are long)
+var HEADERS = ['Timestamp', 'Name', 'Class', 'FavoriteSubject', 'Rating', 'Note'];
 var LIMITS = { name: 40, className: 20, subject: 60, note: 200 };
 
-/** Find the sheet tab we read from and write to. */
+/** Ambil tab data; buat tab + baris judul kalau belum ada. */
 function getSheet_() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = SHEET_NAME ? spreadsheet.getSheetByName(SHEET_NAME) : spreadsheet.getSheets()[0];
-  if (!sheet) throw new Error('Sheet tab "' + SHEET_NAME + '" was not found.');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+    sheet.setFrozenRows(1);
+  }
   return sheet;
 }
 
-/** Send a JavaScript object back as JSON. */
 function jsonReply_(object) {
-  return ContentService
-    .createTextOutput(JSON.stringify(object))
+  return ContentService.createTextOutput(JSON.stringify(object))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Turn any value into clean single-line text. */
 function cleanText_(value) {
   return String(value === null || value === undefined ? '' : value)
-    .replace(/[\u0000-\u001F\u007F]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/[\u0000-\u001F\u007F]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-/**
- * Check the incoming profile. Returns an error message, or '' if all is fine.
- * (The website already validated it - this is a second safety net,
- * in case someone calls the web app URL directly.)
- */
-function validate_(data) {
-  if (!data.name) return 'Name is required.';
-  if (data.name.length > LIMITS.name) return 'Name is too long.';
-  if (!data.className) return 'Class is required.';
-  if (data.className.length > LIMITS.className) return 'Class is too long.';
-  if (!data.favoriteSubject) return 'Favorite subject is required.';
-  if (data.favoriteSubject.length > LIMITS.subject) return 'Subject is too long.';
-  if (data.note.length > LIMITS.note) return 'Note is too long.';
-  if (data.rating !== '' && !/^[1-5]$/.test(data.rating)) return 'Rating must be 1 to 5 or empty.';
+/** Cegah teks diawali = + - @ dibaca sebagai rumus spreadsheet. */
+function safeCell_(text) {
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+function validate_(d) {
+  if (!d.name) return 'Name is required.';
+  if (d.name.length > LIMITS.name) return 'Name is too long.';
+  if (!d.className) return 'Class is required.';
+  if (d.className.length > LIMITS.className) return 'Class is too long.';
+  if (!d.favoriteSubject) return 'Favorite subject is required.';
+  if (d.favoriteSubject.length > LIMITS.subject) return 'Subject is too long.';
+  if (d.note.length > LIMITS.note) return 'Note is too long.';
+  if (d.rating !== '' && !/^[1-5]$/.test(d.rating)) return 'Rating must be 1 to 5 or empty.';
   return '';
 }
 
-/** POST: add a new row. */
 function doPost(e) {
-  // A "lock" makes sure two students submitting at once do not clash.
   var lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
-
     var raw = JSON.parse(e.postData.contents);
-    var data = {
+    var d = {
       name: cleanText_(raw.name),
       className: cleanText_(raw.className),
       favoriteSubject: cleanText_(raw.favoriteSubject),
       rating: raw.rating === null || raw.rating === undefined ? '' : cleanText_(raw.rating),
       note: cleanText_(raw.note)
     };
-
-    var problem = validate_(data);
+    var problem = validate_(d);
     if (problem) return jsonReply_({ ok: false, error: problem });
 
     var sheet = getSheet_();
     var row = sheet.getLastRow() + 1;
-    var values = [[new Date().toISOString(), data.name, data.className, data.favoriteSubject, data.rating, data.note]];
-
-    // Format the cells as plain text BEFORE writing, so text such as "=1+1"
-    // is stored as text and never runs as a spreadsheet formula.
     var range = sheet.getRange(row, 1, 1, 6);
-    range.setNumberFormat('@');
-    range.setValues(values);
-
+    range.setNumberFormat('@'); // simpan sebagai teks
+    range.setValues([[new Date().toISOString(), safeCell_(d.name), safeCell_(d.className),
+      d.favoriteSubject, d.rating, safeCell_(d.note)]]);
+    SpreadsheetApp.flush();
     return jsonReply_({ ok: true });
   } catch (err) {
     return jsonReply_({ ok: false, error: String(err && err.message ? err.message : err) });
   } finally {
-    lock.releaseLock();
+    try { lock.releaseLock(); } catch (x) {}
   }
 }
 
-/** GET: return all rows. */
+/** GET: hanya mapel + rating + waktu (tanpa nama), cukup untuk papan skor. */
 function doGet(e) {
   try {
     var sheet = getSheet_();
     var lastRow = sheet.getLastRow();
-    if (lastRow < 2) return jsonReply_({ ok: true, students: [] }); // only the header row
-
+    if (lastRow < 2) return jsonReply_({ ok: true, students: [] });
     var rows = sheet.getRange(2, 1, lastRow - 1, 6).getValues();
     var students = rows
-      .filter(function (r) { return r[1] !== ''; }) // skip rows without a name
+      .filter(function (r) { return String(r[3]) !== ''; })
       .map(function (r) {
+        var rating = Number(r[4]);
         return {
           timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
-          name: String(r[1]),
-          className: String(r[2]),
           favoriteSubject: String(r[3]),
-          rating: r[4] === '' ? null : Number(r[4]),
-          note: String(r[5])
+          rating: rating >= 1 && rating <= 5 ? rating : null
         };
       });
-
     return jsonReply_({ ok: true, students: students });
   } catch (err) {
     return jsonReply_({ ok: false, error: String(err && err.message ? err.message : err) });

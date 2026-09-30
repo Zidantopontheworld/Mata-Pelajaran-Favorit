@@ -12,7 +12,7 @@
  *  - Left empty = test mode: profiles are saved in this browser only.
  * ---------------------------------------------------------------------------
  */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySRiu393UE59Lz3bJgVsNmu1XABN90C0hv3o4dEbCmlO4dCrb2_Cnm0oJ66Sp8MEqj/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVtCjPWWD3AI9raiAnKn8KlDeycSnfCy5vxwrbuboVlEbKewbQVFnYm9z8prxwNF4P/exec';
 
 /* Everything below this line can stay exactly as it is. */
 
@@ -138,7 +138,7 @@ const I18N = (() => {
       'home.title2': 'Favorite',
       'home.title3': 'Subject?',
       'home.lead': 'Make your own profile card, rate your favorite class and tell us why you love it. Then meet the whole school in the gallery!',
-      'home.ctaFill': 'Fill In Your Profile',
+      'home.ctaFill': 'Fill In The Survey',
       'home.ctaSee': "See Everyone's Profiles",
       'stat.title': 'Live Scoreboard',
       'stat.students': 'Students so far',
@@ -151,10 +151,10 @@ const I18N = (() => {
       'how.title': 'How It Works',
       'how.1.title': 'Fill in the card',
       'how.1.text': 'Add your name, class and favorite subject. Rating and a note are optional.',
-      'how.2.title': 'Get your profile',
-      'how.2.text': 'Your card pops up in the gallery with a colorful avatar made from your initials.',
-      'how.3.title': 'Meet the class',
-      'how.3.text': 'Search, filter by subject and sort to find friends who love the same class.',
+      'how.2.title': 'Answer saved',
+      'how.2.text': 'Your answer goes straight into our Google Sheet.',
+      'how.3.title': 'Watch the scoreboard',
+      'how.3.text': 'See the most popular subject and the average rating on the homepage.',
       'how.cta': 'Add my card',
       'footer.big': 'Made for our class ❤',
       'footer.small': 'A school project built with HTML, CSS, JavaScript and Google Sheets.',
@@ -182,7 +182,7 @@ const I18N = (() => {
       'input.rating.starN': '{n} stars',
       'input.note.label': 'Why do you like it?',
       'input.note.placeholder': 'Why do you like it?',
-      'input.submit': 'Add me to the gallery!',
+      'input.submit': 'Send my answer!',
       'input.sending': 'Sending...',
       'input.lookAround': 'Just want to look around?',
       'input.seeGallery': 'See the profile gallery',
@@ -192,9 +192,9 @@ const I18N = (() => {
       'input.preview.subject': 'Subject',
       'input.preview.note': 'Your note will show up here.',
       'success.title': 'Woohoo, {name}!',
-      'success.text': 'Your profile card is now in the gallery. Go say hi to the class!',
+      'success.text': 'Your answer has been saved. Thank you!',
       'success.gallery': 'See the gallery',
-      'success.another': 'Add another profile',
+      'success.another': 'Fill in again',
       'form.oops': 'Oops! {message}',
 
       // ---- Form and server error messages ----
@@ -281,7 +281,7 @@ const I18N = (() => {
       'home.title2': 'Favorit',
       'home.title3': 'kamu?',
       'home.lead': 'Buat kartu profilmu sendiri, beri nilai pelajaran favoritmu, dan ceritakan kenapa kamu suka. Lalu kenalan dengan seluruh sekolah di galeri!',
-      'home.ctaFill': 'Isi Profilmu',
+      'home.ctaFill': 'Isi Survei',
       'home.ctaSee': 'Lihat Profil Semua Orang',
       'stat.title': 'Papan Skor Langsung',
       'stat.students': 'Jumlah siswa',
@@ -294,10 +294,10 @@ const I18N = (() => {
       'how.title': 'Cara Kerja',
       'how.1.title': 'Isi kartunya',
       'how.1.text': 'Tulis nama, kelas, dan pelajaran favoritmu. Rating dan catatan boleh dikosongkan.',
-      'how.2.title': 'Dapatkan profilmu',
-      'how.2.text': 'Kartumu muncul di galeri dengan avatar warna-warni dari inisial namamu.',
-      'how.3.title': 'Kenalan dengan kelas',
-      'how.3.text': 'Cari, saring berdasarkan pelajaran, dan urutkan untuk menemukan teman yang suka pelajaran yang sama.',
+      'how.2.title': 'Jawaban tersimpan',
+      'how.2.text': 'Jawabanmu langsung masuk ke Google Sheet kami.',
+      'how.3.title': 'Lihat papan skor',
+      'how.3.text': 'Lihat pelajaran terpopuler dan rata-rata rating di beranda.',
       'how.cta': 'Tambah kartuku',
       'footer.big': 'Dibuat untuk kelas kita ❤',
       'footer.small': 'Proyek sekolah yang dibuat dengan HTML, CSS, JavaScript, dan Google Sheets.',
@@ -325,7 +325,7 @@ const I18N = (() => {
       'input.rating.starN': '{n} bintang',
       'input.note.label': 'Kenapa kamu suka?',
       'input.note.placeholder': 'Kenapa kamu suka pelajaran ini?',
-      'input.submit': 'Masukkan aku ke galeri!',
+      'input.submit': 'Kirim jawabanku!',
       'input.sending': 'Mengirim...',
       'input.lookAround': 'Hanya ingin melihat-lihat?',
       'input.seeGallery': 'Lihat galeri profil',
@@ -335,9 +335,9 @@ const I18N = (() => {
       'input.preview.subject': 'Pelajaran',
       'input.preview.note': 'Catatanmu akan muncul di sini.',
       'success.title': 'Hore, {name}!',
-      'success.text': 'Kartu profilmu sudah ada di galeri. Yuk, sapa teman-teman sekelas!',
+      'success.text': 'Jawabanmu sudah tersimpan. Terima kasih!',
       'success.gallery': 'Lihat galeri',
-      'success.another': 'Tambah profil lain',
+      'success.another': 'Isi lagi',
       'form.oops': 'Ups! {message}',
 
       // ---- Pesan kesalahan formulir dan server ----
@@ -669,7 +669,7 @@ const FS = (() => {
         if (!data || data.ok !== true || !Array.isArray(data.students)) {
           throw Object.assign(new Error((data && data.error) || 'Unexpected answer.'), { code: 'badAnswer' });
         }
-        students = data.students.map(normalizeRow).filter((s) => s.name);
+        students = data.students.map(normalizeRow).filter((s) => s.favoriteSubject);
         setMode('sheets');
       } else {
         students = readLocal();
@@ -1045,7 +1045,6 @@ const FS = (() => {
   const success = document.getElementById('success');
   const successTitle = document.getElementById('successTitle');
   const addAnotherBtn = document.getElementById('addAnother');
-  const previewSlot = document.getElementById('previewSlot');
 
   const NOTE_MAX = 200;
   let isSending = false;
@@ -1248,20 +1247,7 @@ const FS = (() => {
   // -------------------------------------------------------------------------
 
   /** Rebuild the preview card from whatever is currently typed in the form. */
-  function updatePreview() {
-    const name = nameInput.value.trim();
-    const student = {
-      name: name || t('input.preview.name'),
-      className: classInput.value.trim() || t('input.preview.class'),
-      favoriteSubject: subjectSelect.value || t('input.preview.subject'),
-      rating: chosenRating(),
-      note: noteInput.value.trim() || (name ? '' : t('input.preview.note')),
-      timestamp: new Date().toISOString(),
-    };
-    const card = FS.createProfileCard(student, { interactive: false });
-    if (!name) card.classList.add('pcard--ghost'); // faded until the student types a name
-    previewSlot.replaceChildren(card);
-  }
+  function updatePreview() { /* preview dihapus */ }
 
   [nameInput, classInput, noteInput].forEach((input) => input.addEventListener('input', updatePreview));
   subjectSelect.addEventListener('change', updatePreview);
@@ -1383,280 +1369,6 @@ const FS = (() => {
 })();
 
 // ===========================================================================
-// PART 6 - Gallery page: the profile cards
-// ===========================================================================
-
-/**
- * profiles.js - the profile gallery page.
- *
- * Flow:  load students -> apply search / subject filter / sort -> draw cards.
- * The list refreshes by itself every 30 seconds, and every word is redrawn
- * when the visitor changes the language.
- */
-
-(() => {
-  'use strict';
-
-  const t = FS.t;
-  const REFRESH_MS = 30 * 1000;
-
-  // All the parts of the page we need to update
-  const grid = document.getElementById('grid');
-  const loadingEl = document.getElementById('loading');
-  const emptyState = document.getElementById('emptyState');
-  const noResults = document.getElementById('noResults');
-  const errorState = document.getElementById('errorState');
-  const chipsEl = document.getElementById('chips');
-  const resultLine = document.getElementById('resultLine');
-  const updatedEl = document.getElementById('updated');
-  const searchInput = document.getElementById('search');
-  const sortSelect = document.getElementById('sort');
-  const detailDialog = document.getElementById('detail');
-  const detailBody = document.getElementById('detailBody');
-
-  // The page's "memory": what data we have and what the visitor chose
-  const state = {
-    students: [],
-    signature: '',      // used to notice when the data really changed
-    query: '',
-    subject: 'all',     // 'all' or an official subject name (see FS.subjectKey)
-    sort: 'newest',
-    lastUpdated: null,  // Date of the last successful load
-    detail: null,       // the student shown in the open modal (if any)
-  };
-
-  // -------------------------------------------------------------------------
-  // Filtering and sorting
-  // -------------------------------------------------------------------------
-
-  /** Newest first. Broken dates count as oldest. */
-  function timeOf(student) {
-    const time = new Date(student.timestamp).getTime();
-    return Number.isNaN(time) ? 0 : time;
-  }
-
-  const sorters = {
-    newest: (a, b) => timeOf(b) - timeOf(a),
-    name: (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
-    // Highest rating first, students without a rating last, ties: newest first
-    rating: (a, b) => (b.rating || 0) - (a.rating || 0) || timeOf(b) - timeOf(a),
-  };
-
-  /** The students that match the search text and the chosen subject, in the chosen order. */
-  function visibleStudents() {
-    const query = state.query.trim().toLowerCase();
-    return state.students
-      .filter((s) => !query || s.name.toLowerCase().includes(query))
-      .filter((s) => state.subject === 'all' || FS.subjectKey(s.favoriteSubject) === state.subject)
-      .sort(sorters[state.sort]);
-  }
-
-  // -------------------------------------------------------------------------
-  // Drawing the page
-  // -------------------------------------------------------------------------
-
-  /** Show exactly one of: loading, grid, empty, no results or error. */
-  function showOnly(which) {
-    loadingEl.hidden = which !== 'loading';
-    grid.hidden = which !== 'grid';
-    emptyState.hidden = which !== 'empty';
-    noResults.hidden = which !== 'noResults';
-    errorState.hidden = which !== 'error';
-  }
-
-  /** Build the filter chips, like "Matematika (12)", from the data. */
-  function renderChips() {
-    const ranking = FS.countBySubject(state.students);
-    chipsEl.replaceChildren();
-    chipsEl.hidden = ranking.length === 0;
-
-    function addChip(value, label, count, info) {
-      const chip = FS.el('button', 'chip');
-      chip.type = 'button';
-      chip.setAttribute('aria-pressed', String(state.subject === value));
-      if (info) {
-        chip.style.setProperty('--tag-bg', info.color);
-        const icon = FS.el('span', 'chip__icon', info.icon);
-        icon.setAttribute('aria-hidden', 'true');
-        chip.append(icon);
-      }
-      chip.append(document.createTextNode(`${label} (${count})`));
-      chip.addEventListener('click', () => {
-        state.subject = value;
-        render();
-      });
-      chipsEl.appendChild(chip);
-    }
-
-    addChip('all', t('profiles.all'), state.students.length, null);
-    ranking.forEach(({ key, count }) => {
-      const info = FS.subjectInfo(key);
-      addChip(key, info.short, count, info);
-    });
-  }
-
-  /** Draw everything. `animate` makes the cards pop in (used after loading new data). */
-  function render(animate = false) {
-    // If the chosen subject vanished (for example after a refresh), go back to "all".
-    if (state.subject !== 'all' && !state.students.some((s) => FS.subjectKey(s.favoriteSubject) === state.subject)) {
-      state.subject = 'all';
-    }
-
-    renderChips();
-
-    if (state.students.length === 0) {
-      resultLine.textContent = '';
-      return showOnly('empty');
-    }
-
-    const list = visibleStudents();
-    resultLine.textContent = t(state.students.length === 1 ? 'profiles.showingOne' : 'profiles.showingMany', {
-      shown: list.length,
-      total: state.students.length,
-    });
-
-    if (list.length === 0) return showOnly('noResults');
-
-    const cards = document.createDocumentFragment();
-    list.forEach((student, index) => {
-      const card = FS.createProfileCard(student);
-      card.style.setProperty('--i', String(Math.min(index, 12))); // stagger the pop-in
-      card.addEventListener('click', () => openDetail(student));
-      cards.appendChild(card);
-    });
-    grid.replaceChildren(cards);
-    grid.classList.toggle('grid--animate', animate && !FS.prefersReducedMotion());
-    showOnly('grid');
-  }
-
-  /** "Updated 9:05 AM" in the chosen language. */
-  function renderUpdated() {
-    updatedEl.textContent = state.lastUpdated
-      ? t('profiles.updated', { time: state.lastUpdated.toLocaleTimeString(I18N.locale(), { hour: 'numeric', minute: '2-digit' }) })
-      : '';
-  }
-
-  // -------------------------------------------------------------------------
-  // The big detail view (modal)
-  // -------------------------------------------------------------------------
-
-  /** Fill the dialog with one student's full profile (in the current language). */
-  function fillDetail(student) {
-    const body = FS.el('div', 'detail');
-    body.append(FS.createAvatar(student.name, 'big'));
-
-    const name = FS.el('h2', 'detail__name', student.name);
-    name.id = 'detailName';
-    body.append(name);
-
-    const meta = FS.el('div', 'detail__meta');
-    meta.append(FS.createClassSticker(student.className), FS.createSubjectSticker(student.favoriteSubject, { full: true }));
-    body.append(meta);
-
-    const rating = FS.el('div', 'detail__block');
-    rating.append(FS.el('h3', 'detail__heading', t('detail.rating')));
-    if (student.rating) {
-      rating.append(FS.createStars(student.rating, 'stars--big'));
-    } else {
-      rating.append(FS.el('p', 'detail__muted', t('detail.noRating')));
-    }
-    body.append(rating);
-
-    const about = FS.el('div', 'detail__block');
-    about.append(FS.el('h3', 'detail__heading', t('detail.about')));
-    about.append(FS.el('p', student.note ? 'detail__note' : 'detail__muted', student.note || t('detail.noNote')));
-    body.append(about);
-
-    const joined = FS.joinedText(student.timestamp);
-    if (joined) body.append(FS.el('p', 'detail__date', joined));
-    if (student.demo) body.append(FS.el('p', 'detail__demo', t('detail.demo')));
-
-    detailBody.replaceChildren(body);
-  }
-
-  function openDetail(student) {
-    state.detail = student;
-    fillDetail(student);
-    detailDialog.showModal();
-  }
-
-  // Close by the X button (Escape is handled by <dialog> itself) ...
-  document.getElementById('detailClose').addEventListener('click', () => detailDialog.close());
-  // ... or by clicking the dark backdrop. Clicks on the panel have a different target.
-  detailDialog.addEventListener('click', (event) => {
-    if (event.target === detailDialog) detailDialog.close();
-  });
-  detailDialog.addEventListener('close', () => { state.detail = null; });
-
-  // -------------------------------------------------------------------------
-  // Loading data
-  // -------------------------------------------------------------------------
-
-  /**
-   * Ask the server for students. On the automatic refresh (`quiet`) we keep
-   * showing the old cards if something fails, instead of an error screen.
-   */
-  async function load({ quiet = false } = {}) {
-    if (!quiet && state.students.length === 0) showOnly('loading');
-    try {
-      const { students } = await FS.fetchStudents();
-      const signature = JSON.stringify(students);
-      const changed = signature !== state.signature;
-      state.students = students;
-      state.signature = signature;
-      if (changed) render(true); // only redraw when something really changed
-      state.lastUpdated = new Date();
-      renderUpdated();
-    } catch (err) {
-      if (!quiet || state.students.length === 0) showOnly('error');
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Wiring up the controls
-  // -------------------------------------------------------------------------
-
-  searchInput.addEventListener('input', () => {
-    state.query = searchInput.value;
-    render();
-  });
-
-  sortSelect.addEventListener('change', () => {
-    state.sort = sortSelect.value;
-    render();
-  });
-
-  document.getElementById('resetFilters').addEventListener('click', () => {
-    state.query = '';
-    state.subject = 'all';
-    searchInput.value = '';
-    render();
-  });
-
-  document.getElementById('retry').addEventListener('click', () => load());
-
-  // New language: redraw cards, chips, counters, and the open modal (if any).
-  document.addEventListener('fs:langchange', () => {
-    if (state.signature) render();
-    renderUpdated();
-    if (state.detail) fillDetail(state.detail);
-  });
-
-  // Load when the gallery is opened, refresh every 30 seconds while it stays open.
-  let refreshTimer = null;
-  document.addEventListener('fs:viewchange', (event) => {
-    clearInterval(refreshTimer);
-    refreshTimer = null;
-    if (event.detail.view === 'profiles') {
-      load();
-      refreshTimer = setInterval(() => load({ quiet: true }), REFRESH_MS);
-    } else if (detailDialog.open) {
-      detailDialog.close();
-    }
-  });
-})();
-
-// ===========================================================================
 // PART 8 - Page switching. The three "pages" (home, input, profiles) all live
 // in index.html; the address (#home, #input, #profiles) decides which is shown.
 // ===========================================================================
@@ -1664,8 +1376,8 @@ const FS = (() => {
 (() => {
   'use strict';
 
-  const VIEWS = ['home', 'input', 'profiles'];
-  const TITLE_KEYS = { home: 'home.docTitle', input: 'input.docTitle', profiles: 'profiles.docTitle' };
+  const VIEWS = ['home', 'input'];
+  const TITLE_KEYS = { home: 'home.docTitle', input: 'input.docTitle' };
   let current = null;
 
   function viewFromHash() {
